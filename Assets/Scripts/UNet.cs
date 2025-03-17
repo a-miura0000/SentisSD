@@ -36,23 +36,21 @@ namespace SentisSD
 		private const float				cm_linearEnd = 0.0120f;
 		private const float				cm_scaleFactor = 1f / 0.18215f;
 		/*----------------------------------------------------------------------------------------------------------*/
-		public void Set(Tensor<float> hiddenStatesTensor, Tensor<float> sampleTensor, float guidanceScale, int step)
+		public void Set(Tensor<float> hiddenStatesTensor, int height, int width, float guidanceScale, int step)
 		{
 			m_hiddenStatesTensor = hiddenStatesTensor;
 			m_guidanceScale = guidanceScale;
 			m_step = step;
 			
-			var shape = sampleTensor.shape;
-			m_sampleShape = new TensorShape(shape[0] * 2, shape[1], shape[2], shape[3]);
-			m_sampleBuffers = sampleTensor.AsReadOnlyNativeArray().ToArray();
+			createSample(height, width);
 			m_currentStep = 0;
 			
 			m_data = new Data[m_step];
 			
-			var indexs = new float[m_step];
+			var indexs = new double[m_step];
 			if(m_step > 1)
 			{
-				float rate = ((float)(cm_traningTimeSteps - 1)) / (m_step - 1);
+				double rate = ((double)(cm_traningTimeSteps - 1)) / (m_step - 1);
 				for(int i = 0; i < m_step; ++i) indexs[i] = i * rate;
 			}
 			
@@ -66,7 +64,7 @@ namespace SentisSD
 				}
 				else 
 				{
-					float t = (indexs[i] - index);
+					float t = (float)(indexs[i] - index);
 					m_data[i].sigma = (m_sigmaList[index + 1] - m_sigmaList[index]) * t + m_sigmaList[index];
 				}
 				
@@ -153,6 +151,29 @@ namespace SentisSD
 					m_tmpTensors[1], 
 					m_hiddenStatesTensor 
 				};
+		}
+		/*----------------------------------------------------------------------------------------------------------*/
+		private void createSample(int height, int width)
+		{
+			int batch = 1;
+			int channel = 4;
+			height /= 8;
+			width /= 8;
+			m_sampleShape = new TensorShape(batch * 2, channel, height, width);
+			int length = batch * channel * height * width;
+			m_sampleBuffers = new float[length];
+			
+			var random = new System.Random();
+			for(int i = 0; i < length; ++i)
+			{
+				var u0 = random.NextDouble();
+				var u1 = random.NextDouble();
+				var radius = Math.Sqrt(-2.0 * Math.Log(u0));
+				var theta = 2.0 * Math.PI * u1;
+				var standardNormalRand = radius * Math.Cos(theta);
+				
+				m_sampleBuffers[i] = (float)standardNormalRand * m_sigmaList[0];
+			}
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private void linearMultistepMethod(float[] modelOutputBuffers)

@@ -32,7 +32,7 @@ namespace SentisSD
 			for(int c = 0; c < channel; ++c) {
 				for(int h = 0; h < m_height; ++h) {
 					for(int w = 0; w < m_width; ++w) {
-						inputTensor[0, c, h, w] = 1f;
+						inputTensor[0, c, h, w] = 0.0f;
 					}
 				}
 			}

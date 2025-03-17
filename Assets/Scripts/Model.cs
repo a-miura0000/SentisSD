@@ -108,7 +108,7 @@ namespace SentisSD
 				});
 			m_step = Step.Set;
 			
-			Debug.Log("LoadCompleted " + getModelDirectoryName());
+			Debug.Log("Load Completed " + getModelDirectoryName());
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private IEnumerator inference()
@@ -131,7 +131,7 @@ namespace SentisSD
 			if(isInferenceCompleted())
 			{
 				m_step = Step.Idle;
-				Debug.Log(this.GetType().Name + " InferenceCompleted");
+				Debug.Log(this.GetType().Name + " Inference Completed");
 			}
 			else 
 			{

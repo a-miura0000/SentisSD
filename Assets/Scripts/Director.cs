@@ -14,14 +14,12 @@ namespace SentisSD
 		{
 			Idle,
 			TextEncode,
-			VAEEncode,
 			UNet,
 			VAEDecode,
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private UI						m_ui;
 		private TextEncoder				m_textEncoder;
-		private VAEEncoder				m_vaeEncoder;
 		private UNet					m_unet;
 		private VAEDecoder				m_vaeDecoder;
 		private bool					m_isGenerate;
@@ -39,7 +37,6 @@ namespace SentisSD
 			modelParent.SetParent(transform);
 			
 			m_textEncoder = createModel<TextEncoder>(modelParent);
-			m_vaeEncoder = createModel<VAEEncoder>(modelParent);
 			m_unet = createModel<UNet>(modelParent);
 			m_vaeDecoder = createModel<VAEDecoder>(modelParent);
 			
@@ -60,13 +57,7 @@ namespace SentisSD
 					break;
 				case Status.TextEncode:
 					if(!m_textEncoder.IsInferenceCompleted()) break;
-					m_vaeEncoder.Set(256, 256);
-					m_vaeEncoder.Inference();
-					m_status = Status.VAEEncode;
-					break;
-				case Status.VAEEncode:
-					if(!m_vaeEncoder.IsInferenceCompleted()) break;
-					m_unet.Set(m_textEncoder.GetOutputTensor(), m_vaeEncoder.GetOutputTensor(), 7.5f, 20);
+					m_unet.Set(m_textEncoder.GetOutputTensor(), 256, 256, 7.5f, 15);
 					m_unet.Inference();
 					m_status = Status.UNet;
 					break;
