@@ -19,12 +19,14 @@ namespace SentisSD
 			Idle,
 			Load,
 			Set,
+			Inference,
 			Wait,
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private string					m_modelPath;
 		private Unity.Sentis.Model		m_model;
 		private Worker					m_worker;
+		private Tensor[]				m_inputsTensor;
 		private Tensor<float>			m_outputTensor;
 		private Step					m_step;
 		/*----------------------------------------------------------------------------------------------------------*/
@@ -33,8 +35,11 @@ namespace SentisSD
 			m_modelPath = Path.Join(Application.streamingAssetsPath, "Models/" + getModelDirectoryName() + "/model.sentis");
 			m_model = null;
 			m_worker = null;
+			m_inputsTensor = null;
 			m_outputTensor = null;
 			m_step = Step.Idle;
+			
+			start();
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		public void Update()
@@ -42,6 +47,11 @@ namespace SentisSD
 			switch(m_step)
 			{
 				case Step.Set:
+					cleanup();
+					m_worker = new Worker(m_model, BackendType.GPUCompute);
+					m_step = Step.Inference;
+					break;
+				case Step.Inference:
 					StartCoroutine(inference());
 					break;
 				default:
@@ -51,8 +61,7 @@ namespace SentisSD
 		/*----------------------------------------------------------------------------------------------------------*/
 		public void OnDestroy()
 		{
-			if(m_worker != null) m_worker.Dispose();
-			if(m_outputTensor != null) m_outputTensor.Dispose();
+			cleanup();
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		public void Inference()
@@ -71,6 +80,16 @@ namespace SentisSD
 			return m_outputTensor;
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
+		protected void replaceOutputTensor(Tensor<float> tensor)
+		{
+			if(m_outputTensor != null) m_outputTensor.Dispose();
+			m_outputTensor = tensor;
+		}
+		/*----------------------------------------------------------------------------------------------------------*/
+		protected virtual void start() {}
+		protected virtual void postInference() {}
+		protected virtual bool isInferenceCompleted() { return true; }
+		/*----------------------------------------------------------------------------------------------------------*/
 		protected abstract string getModelDirectoryName();
 		protected abstract Tensor[] generateInputsTensor();
 		/*----------------------------------------------------------------------------------------------------------*/
@@ -87,7 +106,6 @@ namespace SentisSD
 				{
 					m_model = ModelLoader.Load(m_modelPath);
 				});
-			m_worker = new Worker(m_model, BackendType.GPUCompute);
 			m_step = Step.Set;
 			
 			Debug.Log("LoadCompleted " + getModelDirectoryName());
@@ -97,8 +115,8 @@ namespace SentisSD
 		{
 			m_step = Step.Wait;
 			
-			var inputsTensor = generateInputsTensor();
-			m_worker.Schedule(inputsTensor);
+			m_inputsTensor = generateInputsTensor();
+			m_worker.Schedule(m_inputsTensor);
 			var tmpTensor = m_worker.PeekOutput() as Tensor<float>;
 			var awaiter = tmpTensor.ReadbackAndCloneAsync().GetAwaiter();
 			while(!awaiter.IsCompleted)
@@ -107,15 +125,32 @@ namespace SentisSD
 			}
 			m_outputTensor = awaiter.GetResult();
 			
-			tmpTensor.Dispose();	
-			foreach(var inputTensor in inputsTensor)
+			tmpTensor.Dispose();
+			postInference();
+			
+			if(isInferenceCompleted())
 			{
-				inputTensor.Dispose();
+				m_step = Step.Idle;
+				Debug.Log(this.GetType().Name + " InferenceCompleted");
 			}
-			
-			m_step = Step.Idle;
-			
-			Debug.Log(this.GetType().Name + " InferenceCompleted");
+			else 
+			{
+				m_outputTensor.Dispose();
+				m_step = Step.Inference;
+			}
+		}
+		/*----------------------------------------------------------------------------------------------------------*/
+		private void cleanup()
+		{
+			if(m_worker != null) m_worker.Dispose();
+			if(m_inputsTensor != null)
+			{
+				foreach(var inputTensor in m_inputsTensor)
+				{
+					inputTensor.Dispose();
+				}
+			}
+			if(m_outputTensor != null) m_outputTensor.Dispose();
 		}
 	}	// class Model
 }	// namespace SentisSD

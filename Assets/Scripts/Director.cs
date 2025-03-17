@@ -60,12 +60,13 @@ namespace SentisSD
 					break;
 				case Status.TextEncode:
 					if(!m_textEncoder.IsInferenceCompleted()) break;
+					m_vaeEncoder.Set(256, 256);
 					m_vaeEncoder.Inference();
 					m_status = Status.VAEEncode;
 					break;
 				case Status.VAEEncode:
 					if(!m_vaeEncoder.IsInferenceCompleted()) break;
-					m_unet.Set(m_textEncoder.GetOutputTensor(), m_vaeEncoder.GetOutputTensor());
+					m_unet.Set(m_textEncoder.GetOutputTensor(), m_vaeEncoder.GetOutputTensor(), 7.5f, 20);
 					m_unet.Inference();
 					m_status = Status.UNet;
 					break;

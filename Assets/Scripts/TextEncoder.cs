@@ -22,8 +22,8 @@ namespace SentisSD
 		/*----------------------------------------------------------------------------------------------------------*/
 		protected override Tensor[] generateInputsTensor()
 		{
-			int[] inputIds = {49406, 2368, 49407};
-			return new Tensor[] { new Tensor<int>(new TensorShape(1, inputIds.Length), inputIds) };
+			int[] inputIds = {49406, 49407, 49407, 49406, 2368, 49407};
+			return new Tensor[] { new Tensor<int>(new TensorShape(2, 3), inputIds) };
 		}
 	}	// class TextEncoder
 }	// namespace SentisSD
