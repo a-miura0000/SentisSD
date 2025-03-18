@@ -51,13 +51,14 @@ namespace SentisSD
 				case Status.Idle:
 					if(!m_isGenerate) break;
 					m_isGenerate = false;
-					m_textEncoder.Set("cat");
+					m_ui.InferenceStart();
+					m_textEncoder.Set(m_ui.Prompt);
 					m_textEncoder.Inference();
 					m_status = Status.TextEncode;
 					break;
 				case Status.TextEncode:
 					if(!m_textEncoder.IsInferenceCompleted()) break;
-					m_unet.Set(m_textEncoder.GetOutputTensor(), 256, 256, 7.5f, 15);
+					m_unet.Set(m_textEncoder.GetOutputTensor(), 512, 512, 7.5f, 15);
 					m_unet.Inference();
 					m_status = Status.UNet;
 					break;
@@ -69,7 +70,8 @@ namespace SentisSD
 					break;
 				case Status.VAEDecode:
 					if(!m_vaeDecoder.IsInferenceCompleted()) break;
-					m_ui.GenerateImage(m_vaeDecoder.GetOutputTensor(), 256, 256);
+					m_ui.GenerateImage(m_vaeDecoder.GetOutputTensor(), 512, 512);
+					m_ui.InferenceEnd();
 					m_status = Status.Idle;
 					break;
 				default:
