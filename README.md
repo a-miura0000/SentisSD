@@ -20,4 +20,5 @@ Unity SentisとStableDiffusionを使用して画像生成を行うサンプル�
    - その後、`./Assets/StreamingAssets/text_encoder/model.sentis` となるようにフォルダ構成を整えてください。
    - `unet` と `vae_decoder` についても同様に行ってください。
 4. ダウンロードした `tokenizer` フォルダを `./Assets/StreamingAssets` にコピーします。
-5. Unityエディタを再生して、`Prompt`フィールドにテキストを入力(英語のみ対応)し、「**Generate**」ボタンを押すと画像が生成されます。
+5. `./Assets/Scenes/Main.unity`を開きます。
+6. Unityエディタを再生して、`Prompt`フィールドにテキストを入力(英語のみ対応)し、「**Generate**」ボタンを押すと画像が生成されます。
