@@ -11,6 +11,7 @@ Unity SentisとStableDiffusionを使用して画像生成を行うサンプル�
 ## 実行手順
 1. [Stable Diffusion Models v1.4](https://huggingface.co/CompVis/stable-diffusion-v1-4/tree/onnx)から以下のコマンドで `onnx` ブランチをクローンします。
 	```
+	git lfs install
 	git clone https://huggingface.co/CompVis/stable-diffusion-v1-4 -b onnx
 	```
 	ダウンロードしたフォルダを、`Assets`フォルダ内に配置します。
