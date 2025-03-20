@@ -13,12 +13,14 @@ namespace SentisSD
 		private enum Status
 		{
 			Idle,
+			Tokenize,
 			TextEncode,
 			UNet,
 			VAEDecode,
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private UI						m_ui;
+		private Tokenizer				m_tokenizer;
 		private TextEncoder				m_textEncoder;
 		private UNet					m_unet;
 		private VAEDecoder				m_vaeDecoder;
@@ -32,13 +34,13 @@ namespace SentisSD
 			m_ui = uiObject.AddComponent<UI>();
 			m_ui.AddListener(() => { m_isGenerate = true; });
 			
-			
 			var modelParent = new GameObject("Models").transform;
 			modelParent.SetParent(transform);
 			
-			m_textEncoder = createModel<TextEncoder>(modelParent);
-			m_unet = createModel<UNet>(modelParent);
-			m_vaeDecoder = createModel<VAEDecoder>(modelParent);
+			m_tokenizer = createObject<Tokenizer>(modelParent);
+			m_textEncoder = createObject<TextEncoder>(modelParent);
+			m_unet = createObject<UNet>(modelParent);
+			m_vaeDecoder = createObject<VAEDecoder>(modelParent);
 			
 			m_isGenerate = false;
 			m_status = Status.Idle;
@@ -52,7 +54,12 @@ namespace SentisSD
 					if(!m_isGenerate) break;
 					m_isGenerate = false;
 					m_ui.InferenceStart();
-					m_textEncoder.Set(m_ui.Prompt);
+					m_tokenizer.Encoder(m_ui.Prompt);
+					m_status = Status.Tokenize;
+					break;
+				case Status.Tokenize:
+					if(!m_tokenizer.IsCompleted()) break;
+					m_textEncoder.Set(m_tokenizer.GetOutputTensor());
 					m_textEncoder.Inference();
 					m_status = Status.TextEncode;
 					break;
@@ -79,7 +86,7 @@ namespace SentisSD
 			}
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
-		private T createModel<T>(Transform parent) where T : Model
+		private T createObject<T>(Transform parent)
 		{
 			var type = typeof(T);
 			var gameObject = new GameObject(type.Name, type);

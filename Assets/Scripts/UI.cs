@@ -95,12 +95,18 @@ namespace SentisSD
 		/*----------------------------------------------------------------------------------------------------------*/
 		private void crateInputField()
 		{
+			Vector2 size = new Vector2(300f, 300f);
+			
 			var inputObject = new GameObject("InputField");
 			inputObject.transform.SetParent(transform, false);
 			m_input = inputObject.AddComponent<InputField>();
 			m_input.lineType = InputField.LineType.MultiLineNewline;
 			
 			inputObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.5f);
+			var rectTransform = inputObject.GetComponent<RectTransform>();
+			rectTransform.sizeDelta = size;
+			rectTransform.anchoredPosition = new Vector2(400f, 0f);
+			rectTransform.pivot = new Vector2(0, 1);
 			
 			var placeholderObject = new GameObject("Placeholder");
 			placeholderObject.transform.SetParent(inputObject.transform, false);
@@ -109,17 +115,15 @@ namespace SentisSD
 			placeholderText.text = "Prompt";
 			placeholderText.color = Color.gray;
 			m_input.placeholder = placeholderText;
+			placeholderObject.GetComponent<RectTransform>().sizeDelta = size;
 			
 			var textObject = new GameObject("Text");
 			textObject.transform.SetParent(inputObject.transform, false);
 			var text = textObject.AddComponent<Text>();
 			setTextParameter(ref text);
+			text.alignment = TextAnchor.UpperLeft;
 			m_input.textComponent = text;
-			
-			var rectTransform = inputObject.GetComponent<RectTransform>();
-			rectTransform.sizeDelta = new Vector2(300f, 300f);
-			rectTransform.anchoredPosition = new Vector2(400f, 0f);
-			rectTransform.pivot = new Vector2(0, 1);
+			textObject.GetComponent<RectTransform>().sizeDelta = size;
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private void createButton()

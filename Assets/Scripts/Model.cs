@@ -28,6 +28,7 @@ namespace SentisSD
 		private Worker					m_worker;
 		private Tensor[]				m_inputsTensor;
 		private Tensor<float>			m_outputTensor;
+		private float					m_lastTime;
 		private Step					m_step;
 		/*----------------------------------------------------------------------------------------------------------*/
 		public void Start()
@@ -49,6 +50,7 @@ namespace SentisSD
 				case Step.Set:
 					cleanup();
 					m_worker = new Worker(m_model, BackendType.GPUCompute);
+					m_lastTime = Time.realtimeSinceStartup;
 					m_step = Step.Inference;
 					break;
 				case Step.Inference:
@@ -101,6 +103,8 @@ namespace SentisSD
 				return;
 			}
 			
+			m_lastTime = Time.realtimeSinceStartup;
+			
 			m_step = Step.Load;
 			await Task.Run(()=>
 				{
@@ -108,7 +112,7 @@ namespace SentisSD
 				});
 			m_step = Step.Set;
 			
-			Debug.Log("Load Completed " + getModelDirectoryName());
+			Debug.Log("Load Completed " + getModelDirectoryName() + " " + (Time.realtimeSinceStartup - m_lastTime).ToString() + "s");
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		private IEnumerator inference()
@@ -131,7 +135,7 @@ namespace SentisSD
 			if(isInferenceCompleted())
 			{
 				m_step = Step.Idle;
-				Debug.Log(this.GetType().Name + " Inference Completed");
+				Debug.Log(this.GetType().Name + " Inference Completed " + (Time.realtimeSinceStartup - m_lastTime).ToString() + "s");
 			}
 			else 
 			{

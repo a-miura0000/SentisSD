@@ -11,8 +11,11 @@ namespace SentisSD
 	public class TextEncoder : Model
 	{
 		/*----------------------------------------------------------------------------------------------------------*/
-		public void Set(string prompt)
+		private Tensor<int>			m_inputIdsTensor;
+		/*----------------------------------------------------------------------------------------------------------*/
+		public void Set(Tensor<int> inputIdsTensor)
 		{
+			m_inputIdsTensor = inputIdsTensor;
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
 		protected override string getModelDirectoryName()
@@ -22,11 +25,7 @@ namespace SentisSD
 		/*----------------------------------------------------------------------------------------------------------*/
 		protected override Tensor[] generateInputsTensor()
 		{
-		//	int[] inputIds = {49406, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
-		//						49406, 320, 23050, 530, 550, 896, 14178, 530, 518, 6267, 49407};
-			int[] inputIds = {49406, 49407, 49407,
-								49406, 2368, 49407};
-			return new Tensor[] { new Tensor<int>(new TensorShape(2, 3), inputIds) };
+			return new Tensor[] { m_inputIdsTensor };
 		}
 	}	// class TextEncoder
 }	// namespace SentisSD

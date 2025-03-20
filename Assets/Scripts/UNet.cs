@@ -97,7 +97,7 @@ namespace SentisSD
 			int count = tensor.count / 2;
 			for(int i = 0; i < count; ++i)
 			{
-				modelOutputBuffers[i] += (modelOutputBuffers[i + count] - modelOutputBuffers[i]) * m_guidanceScale;
+				modelOutputBuffers[i] += (modelOutputBuffers[count + i] - modelOutputBuffers[i]) * m_guidanceScale;
 			}
 			
 			linearMultistepMethod(modelOutputBuffers);
@@ -147,9 +147,9 @@ namespace SentisSD
 			
 			return new Tensor[] 
 				{ 
-					m_tmpTensors[0], 
-					m_tmpTensors[1], 
-					m_hiddenStatesTensor 
+					m_tmpTensors[0],
+					m_tmpTensors[1],
+					m_hiddenStatesTensor
 				};
 		}
 		/*----------------------------------------------------------------------------------------------------------*/
