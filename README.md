@@ -1,5 +1,6 @@
 # SentisSD
 Unity SentisとStableDiffusionを使用して画像生成を行うサンプルです。
+![Image Description](./Images/Image.png)  
 
 ## 動作確認済み環境
 - **OS**: Windows 11
